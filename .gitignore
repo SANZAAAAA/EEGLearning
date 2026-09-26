@@ -1,0 +1,23 @@
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ipynb_checkpoints/
+
+# ---- 虚拟环境与 uv 缓存 ----
+.venv/
+.uv/
+.mplconfig/
+
+# ---- 数据与训练产物 (体积大, 不入库) ----
+data/
+results/
+results_smoke/
+*.pt
+*.npy
+
+# ---- 系统文件 ----
+.DS_Store
+.idea/
+.vscode/
