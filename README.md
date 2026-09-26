@@ -1,5 +1,7 @@
 # EEGNet 脑电解码：想象左手 vs 想象右手
 
+[![CI](https://github.com/SANZAAAAA/EEGLearning/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/SANZAAAAA/EEGLearning/actions/workflows/ci.yml)
+
 用 **EEGNet**(Lawhern et al., 2018) 对脑电信号做二分类解码的完整流程：
 自动下载公开数据集 → 预处理 → 训练 → 交叉验证评估 → 输出图表与报告。
 
@@ -74,6 +76,12 @@ python train_eegnet.py --subjects 1-20 --download-only
 
 > 设备说明：EEGNet 本身很小（本配置约 2.9k 参数），实测 MPS 的算子调度开销反而略高于 CPU，
 > 两者耗时基本一致。脚本会自动探测 MPS，不可用时回退 CPU。
+
+跑单元测试（不依赖真实数据，0.1 秒完成）：
+
+```bash
+python -m unittest discover -s tests -t . -v
+```
 
 ---
 
@@ -205,17 +213,21 @@ python train_eegnet.py --subjects 1-10 --cv 5 --epochs 150 --analysis \
 ## 8. 文件结构
 
 ```
-Research/
+EEGLearning/
 ├── README.md
 ├── requirements.txt
 ├── train_eegnet.py          主入口（下载 + 训练 + 评估 + 汇总）
-└── eegnet/
-    ├── config.py            超参数 dataclass
-    ├── data.py              数据下载、预处理、切分、归一化
-    ├── model.py             EEGNet 模型
-    ├── engine.py            训练循环、早停、交叉验证、指标
-    ├── plots.py             训练曲线 / 混淆矩阵 / 汇总图
-    └── analysis.py          PSD、频带功率地形图、侧化指数
+├── eegnet/
+│   ├── config.py            超参数 dataclass
+│   ├── data.py              数据下载、预处理、切分、归一化
+│   ├── model.py             EEGNet 模型
+│   ├── engine.py            训练循环、早停、交叉验证、指标
+│   ├── plots.py             训练曲线 / 混淆矩阵 / 汇总图
+│   └── analysis.py          PSD、频带功率地形图、侧化指数
+├── tests/
+│   └── test_eegnet.py       单元测试（不依赖真实数据，0.1 秒跑完）
+└── .github/workflows/
+    └── ci.yml               CI：导入检查 + 单元测试 + 手动触发的数据冒烟训练
 ```
 
 磁盘占用（供参考，可随时删掉重新生成）：
