@@ -124,14 +124,27 @@ def main(argv=None) -> int:
 
     t_start = time.time()
     stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+    # 结果路径先只算出来、暂不创建: --download-only 不该留下空的结果目录
     run_dir = Path(cfg.out_dir) / (cfg.run_name or f"run_{stamp}")
-    run_dir.mkdir(parents=True, exist_ok=True)
     log_path = run_dir / "log.txt"
+    _pending: list[str] = []
+    file_log_on = False
 
     def log(msg: str = "") -> None:
         print(msg, flush=True)
-        with log_path.open("a", encoding="utf-8") as fh:
-            fh.write(msg + "\n")
+        if file_log_on:
+            with log_path.open("a", encoding="utf-8") as fh:
+                fh.write(msg + "\n")
+        else:
+            _pending.append(msg)
+
+    def start_file_log() -> None:
+        """真正创建结果目录, 并把此前缓冲的日志补写进去。"""
+        nonlocal file_log_on
+        run_dir.mkdir(parents=True, exist_ok=True)
+        log_path.write_text("".join(m + "\n" for m in _pending), encoding="utf-8")
+        _pending.clear()
+        file_log_on = True
 
     log("=" * 72)
     log(f"EEGNet 脑电解码  |  开始时间 {datetime.now():%Y-%m-%d %H:%M:%S}")
@@ -149,6 +162,8 @@ def main(argv=None) -> int:
         log(f"\n[完成] 仅下载。数据位于 {(Path(cfg.data_dir) / 'MNE-eegbci-data').resolve()}")
         log(f"耗时 {time.time() - t_start:.1f}s")
         return 0
+
+    start_file_log()
 
     # ---- 只做经典脑电分析 ----
     if args.analysis_only:
