@@ -6,6 +6,11 @@ import json
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 
+# 项目根目录 = 本文件的上上级 (即 EEGLearning/)。
+# 下面所有默认路径都锚定到它, 这样无论从哪个目录启动脚本,
+# 数据和结果都只会落在项目文件夹内, 不会跑到外面去。
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+
 
 def parse_int_list(spec: str | list[int]) -> list[int]:
     """把 ``"1-10"`` / ``"1,3,5"`` / ``"2-4,7"`` 解析成整数列表。"""
@@ -31,7 +36,7 @@ class Config:
     """一次实验的全部超参数。"""
 
     # ---------------- 数据 ----------------
-    data_dir: Path = Path("data")
+    data_dir: Path = PROJECT_ROOT / "data"
     subjects: list[int] = field(default_factory=lambda: list(range(1, 11)))
     runs: list[int] = field(default_factory=lambda: [4, 8, 12])
     tmin: float = 0.0            # 相对提示符 (cue) 的起始时间, 秒
@@ -70,7 +75,7 @@ class Config:
     device: str = "auto"         # auto | cpu | mps | cuda
 
     # ---------------- 输出 ----------------
-    out_dir: Path = Path("results")
+    out_dir: Path = PROJECT_ROOT / "results"
     run_name: str | None = None
     analysis: bool = False       # 是否额外做 PSD / 频带功率地形图分析
     download_only: bool = False  # 只下载数据, 不训练

@@ -29,7 +29,7 @@ import numpy as np
 import pandas as pd
 
 from eegnet.analysis import analyze_subject
-from eegnet.config import Config, parse_int_list
+from eegnet.config import PROJECT_ROOT, Config, parse_int_list
 from eegnet.data import download_dataset, load_subject
 from eegnet.engine import evaluate_subject, resolve_device
 from eegnet.plots import plot_confusion_matrix, plot_subject_summary, plot_training_curves
@@ -42,7 +42,8 @@ def build_parser() -> argparse.ArgumentParser:
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     # 数据
-    p.add_argument("--data-dir", type=Path, default=Path("data"), help="数据缓存目录")
+    p.add_argument("--data-dir", type=Path, default=PROJECT_ROOT / "data",
+                   help="数据缓存目录 (默认锚定项目文件夹, 不随当前目录变化)")
     p.add_argument("--subjects", type=str, default="1-10", help="被试编号, 如 1-10 或 1,3,5")
     p.add_argument("--runs", type=str, default="4,8,12", help="使用哪些 run (4/8/12 = 想象左右手)")
     p.add_argument("--tmin", type=float, default=0.0, help="epoch 起点 (秒, 相对提示符)")
@@ -76,7 +77,8 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--class-weights", action="store_true", help="类别加权交叉熵")
     p.add_argument("--device", choices=["auto", "cpu", "mps", "cuda"], default="auto")
     # 输出
-    p.add_argument("--out", type=Path, default=Path("results"), help="结果根目录")
+    p.add_argument("--out", type=Path, default=PROJECT_ROOT / "results",
+                   help="结果根目录 (默认锚定项目文件夹, 不随当前目录变化)")
     p.add_argument("--run-name", type=str, default=None, help="本次运行的子目录名")
     p.add_argument("--analysis", action="store_true", help="额外输出 PSD / 频带功率地形图")
     p.add_argument("--analysis-only", action="store_true",
