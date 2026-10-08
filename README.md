@@ -41,6 +41,43 @@ UV_CACHE_DIR="$PWD/.uv/cache" UV_PYTHON_INSTALL_DIR="$PWD/.uv/python" \
 UV_CACHE_DIR="$PWD/.uv/cache" uv pip install -r requirements.txt
 ```
 
+> ⚠️ **`.venv` 与路径绑定**：不要给 `EEGLearning` 文件夹改名或移动位置。
+> `.venv/bin/python` 是软链接、`bin/` 下脚本的 shebang 写的是绝对路径，改名后它们全部失效，
+> VS Code 会找不到解释器、或跑起来报 `ModuleNotFoundError`。若已经改名，修复方式：
+>
+> ```bash
+> # 1) 让 uv 的版本别名指向真实目录
+> ln -sfn "$PWD/.uv/python/cpython-3.12.14-macos-aarch64-none" \
+>          "$PWD/.uv/python/cpython-3.12-macos-aarch64-none"
+> # 2) 修 .venv 的软链接与 pyvenv.cfg
+> ln -sfn "$PWD/.uv/python/cpython-3.12.14-macos-aarch64-none/bin/python3.12" .venv/bin/python
+> sed -i '' "s|^home = .*|home = $PWD/.uv/python/cpython-3.12.14-macos-aarch64-none/bin|" .venv/pyvenv.cfg
+> # 3) 修 bin/ 下脚本的 shebang
+> grep -rl '^#!/' .venv/bin | xargs sed -i '' "1s|^#!.*|#!$PWD/.venv/bin/python|"
+> ```
+>
+> 懒得修的话，直接删掉 `.venv` 按上面的「从零重建」重装一遍也可以（离线可用 `.uv/cache` 缓存）。
+
+### 在 VS Code 里一键运行
+
+**打开工作区**：直接用 `code ~/Desktop/Researches/EEGLearning` 打开本项目文件夹（已安装 `code` 命令），
+或者打开外层多根工作区 `~/Desktop/Researches/Researches.code-workspace`（同时包含本项目与 `Maiorana2021_EEGVerification`）。
+
+**一键运行**：`.vscode/` 里已经配好，打开即用，无需再选解释器
+（已固定为 `${workspaceFolder}/.venv/bin/python`）。
+
+| 操作 | 效果 |
+| --- | --- |
+| 编辑器右上角 ▶（Run Python File） | 用 `.venv` 运行当前文件，等价于命令行 `python 文件名` |
+| `F5`，选「1. 冒烟测试」 | `--subjects 1 --max-per-class 10 --epochs 20 --cv 2`，约 1 分钟 |
+| `F5`，选「2. 默认实验」 | 10 名被试 × 5 折交叉验证 |
+| `F5`，选「3. 全量实验 + 脑电分析图」 | `--subjects 1-109 --cv 5 --analysis` |
+| `F5`，选「4. 只下载数据」 | `--download-only` |
+| `Cmd+Shift+P` → Run Task | 「EEGNet: 冒烟测试」/「跑单元测试」 |
+| 终端（Ctrl + 反引号键） | 自动激活 `.venv`，可以直接 `python train_eegnet.py` |
+
+> `.vscode/` 已被 `.gitignore` 忽略，这些配置只作用于你本机。
+
 ---
 
 ## 3. 快速开始
